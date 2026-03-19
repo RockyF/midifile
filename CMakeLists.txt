@@ -1,6 +1,7 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.10)
 
-project(midifile C CXX)
+project(midifile)
+
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -21,24 +22,24 @@ option(BUILD_MIDILIBRARY_ONLY "Build only the midifile library" OFF)
 ##
 
 if(APPLE)
-    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version")
+  set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version")
 endif()
 
 if(MSVC)
-    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+  add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
-    option(STATIC_CRT "Use static CRT libraries" OFF)
+  option(STATIC_CRT "Use static CRT libraries" OFF)
 
-    # Rewrite command line flags to use /MT if necessary
-    if(STATIC_CRT)
-        foreach(flag_var
-                CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
-                CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
-            if(${flag_var} MATCHES "/MD")
-                string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
-            endif(${flag_var} MATCHES "/MD")
-        endforeach(flag_var)
-    endif()
+  # Rewrite command line flags to use /MT if necessary
+  if(STATIC_CRT)
+    foreach(flag_var
+      CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
+      CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
+      if(${flag_var} MATCHES "/MD")
+        string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
+      endif(${flag_var} MATCHES "/MD")
+    endforeach(flag_var)
+  endif()
 endif()
 
 
@@ -48,24 +49,30 @@ endif()
 ##
 
 set(SRCS
-    src/Options.cpp
-    src/Binasc.cpp
-    src/MidiEvent.cpp
-    src/MidiEventList.cpp
-    src/MidiFile.cpp
-    src/MidiMessage.cpp
+  src/Options.cpp
+  src/Binasc.cpp
+  src/MidiEvent.cpp
+  src/MidiEventList.cpp
+  src/MidiFile.cpp
+  src/MidiMessage.cpp
 )
 
 set(HDRS
-    include/Binasc.h
-    include/MidiEvent.h
-    include/MidiEventList.h
-    include/MidiFile.h
-    include/MidiMessage.h
-    include/Options.h
+  include/Binasc.h
+  include/MidiEvent.h
+  include/MidiEventList.h
+  include/MidiFile.h
+  include/MidiMessage.h
+  include/Options.h
 )
 
 add_library(midifile STATIC ${SRCS} ${HDRS})
+
+# Modern CMake: Ensure headers are found by other targets linking to midifile
+target_include_directories(midifile PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
 
 ##############################
 ##
@@ -74,132 +81,38 @@ add_library(midifile STATIC ${SRCS} ${HDRS})
 
 if(NOT BUILD_MIDILIBRARY_ONLY)
 
-  add_executable(80off tools/80off.cpp)
-  add_executable(asciimidi tools/asciimidi.cpp)
-  add_executable(base642midi tools/base642midi.cpp)
-  add_executable(binasc tools/binasc.cpp)
-  add_executable(chaninfo tools/chaninfo.cpp)
-  add_executable(createmidifile tools/createmidifile.cpp)
-  add_executable(createmidifile2 tools/createmidifile2.cpp)
-  add_executable(deltatimes tools/deltatimes.cpp)
-  add_executable(drumtab tools/drumtab.cpp)
-  add_executable(durations tools/durations.cpp)
-  add_executable(extractlyrics tools/extractlyrics.cpp)
-  add_executable(maxtick tools/maxtick.cpp)
-  add_executable(mid2hex tools/mid2hex.cpp)
-  add_executable(mid2mat tools/mid2mat.cpp)
-  add_executable(mid2mtb tools/mid2mtb.cpp)
-  add_executable(mid2svg tools/mid2svg.cpp)
-  add_executable(midi2base64 tools/midi2base64.cpp)
-  add_executable(midi2binasc tools/midi2binasc.cpp)
-  add_executable(midi2chords tools/midi2chords.cpp)
-  add_executable(midi2melody tools/midi2melody.cpp)
-  add_executable(midi2notes tools/midi2notes.cpp)
-  add_executable(midi2skini tools/midi2skini.cpp)
-  add_executable(midi2text tools/midi2text.cpp)
-  add_executable(midicat tools/midicat.cpp)
-  add_executable(mididiss tools/mididiss.cpp)
-  add_executable(midimean tools/midimean.cpp)
-  add_executable(midimixup tools/midimixup.cpp)
-  add_executable(midirange tools/midirange.cpp)
-  add_executable(midireg tools/midireg.cpp)
-  add_executable(miditime tools/miditime.cpp)
-  add_executable(midiuniq tools/midiuniq.cpp)
-  add_executable(mts-type2 tools/mts-type2.cpp)
-  add_executable(mts-type9 tools/mts-type9.cpp)
-  add_executable(perfid tools/perfid.cpp)
-  add_executable(readstatus tools/readstatus.cpp)
-  add_executable(redexpress tools/redexpress.cpp)
-  add_executable(removenote tools/removenote.cpp)
-  add_executable(retick tools/retick.cpp)
-  add_executable(shutak tools/shutak.cpp)
-  add_executable(smfdur tools/smfdur.cpp)
-  add_executable(stretch tools/stretch.cpp)
-  add_executable(sysextest tools/sysextest.cpp)
-  add_executable(temper tools/temper.cpp)
-  add_executable(text2midi tools/text2midi.cpp)
-  add_executable(textmidi tools/textmidi.cpp)
-  add_executable(toascii tools/toascii.cpp)
-  add_executable(tobin tools/tobin.cpp)
-  add_executable(tobinary tools/tobinary.cpp)
-  add_executable(todec tools/todec.cpp)
-  add_executable(tohex tools/tohex.cpp)
-  add_executable(type0 tools/type0.cpp)
-  add_executable(vlv tools/vlv.cpp)
+  set(TOOL_LIST
+    80off asciimidi base642midi binasc chaninfo createmidifile
+    createmidifile2 deltatimes drumtab durations extractlyrics
+    maxtick mid2hex mid2mat mid2mtb mid2svg midi2base64
+    midi2binasc midi2chords midi2melody midi2notes midi2skini
+    midi2text midicat mididiss midimean midimixup midirange
+    midireg miditime midiuniq mts-type2 mts-type9 perfid
+    readstatus redexpress removenote retick shutak smfdur
+    stretch sysextest temper text2midi textmidi toascii
+    tobin tobinary todec tohex type0 vlv
+  )
 
-  target_link_libraries(80off midifile)
-  target_link_libraries(asciimidi midifile)
-  target_link_libraries(base642midi midifile)
-  target_link_libraries(binasc midifile)
-  target_link_libraries(chaninfo midifile)
-  target_link_libraries(createmidifile midifile)
-  target_link_libraries(createmidifile2 midifile)
-  target_link_libraries(deltatimes midifile)
-  target_link_libraries(drumtab midifile)
-  target_link_libraries(durations midifile)
-  target_link_libraries(extractlyrics midifile)
-  target_link_libraries(maxtick midifile)
-  target_link_libraries(mid2hex midifile)
-  target_link_libraries(mid2mat midifile)
-  target_link_libraries(mid2mtb midifile)
-  target_link_libraries(mid2svg midifile)
-  target_link_libraries(midi2base64 midifile)
-  target_link_libraries(midi2binasc midifile)
-  target_link_libraries(midi2chords midifile)
-  target_link_libraries(midi2melody midifile)
-  target_link_libraries(midi2notes midifile)
-  target_link_libraries(midi2skini midifile)
-  target_link_libraries(midi2text midifile)
-  target_link_libraries(midicat midifile)
-  target_link_libraries(mididiss midifile)
-  target_link_libraries(midimean midifile)
-  target_link_libraries(midimixup midifile)
-  target_link_libraries(midirange midifile)
-  target_link_libraries(midireg midifile)
-  target_link_libraries(miditime midifile)
-  target_link_libraries(midiuniq midifile)
-  target_link_libraries(mts-type2 midifile)
-  target_link_libraries(mts-type9 midifile)
-  target_link_libraries(perfid midifile)
-  target_link_libraries(readstatus midifile)
-  target_link_libraries(redexpress midifile)
-  target_link_libraries(removenote midifile)
-  target_link_libraries(retick midifile)
-  target_link_libraries(shutak midifile)
-  target_link_libraries(smfdur midifile)
-  target_link_libraries(stretch midifile)
-  target_link_libraries(sysextest midifile)
-  target_link_libraries(temper midifile)
-  target_link_libraries(text2midi midifile)
-  target_link_libraries(textmidi midifile)
-  target_link_libraries(toascii midifile)
-  target_link_libraries(tobin midifile)
-  target_link_libraries(tobinary midifile)
-  target_link_libraries(todec midifile)
-  target_link_libraries(tohex midifile)
-  target_link_libraries(type0 midifile)
-  target_link_libraries(vlv midifile)
+  foreach(tool ${TOOL_LIST})
+    add_executable(${tool} tools/${tool}.cpp)
+    target_link_libraries(${tool} PRIVATE midifile)
+  endforeach()
 
 endif()
 
 if(HAVE_UNISTD_H AND HAVE_SYS_IO_H)
-    add_executable(midi2beep tools/midi2beep.cpp)
-
-    target_link_libraries(midi2beep midifile)
+  add_executable(midi2beep tools/midi2beep.cpp)
+  target_link_libraries(midi2beep PRIVATE midifile)
 endif()
 
 # The following programs require headers from humextra repository.
 # <https://github.com/humdrum-tools/humextra>
 if(HAVE_HUMDRUM_H)
-    add_executable(henonfile tools/henonfile.cpp)
-    add_executable(mid2hum tools/mid2hum.cpp)
-    add_executable(midiexcerpt tools/midiexcerpt.cpp)
-    add_executable(peep2midi tools/peep2midi.cpp)
-
-    target_link_libraries(henonfile midifile)
-    target_link_libraries(mid2hum midifile)
-    target_link_libraries(midiexcerpt midifile)
-    target_link_libraries(peep2midi midifile)
+  set(HUM_TOOLS henonfile mid2hum midiexcerpt peep2midi)
+  foreach(tool ${HUM_TOOLS})
+    add_executable(${tool} tools/${tool}.cpp)
+    target_link_libraries(${tool} PRIVATE midifile)
+  endforeach()
 endif()
 
 install(TARGETS midifile
